@@ -1,0 +1,112 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-ms-bg text-ms-dark font-sans;
+    -webkit-font-smoothing: antialiased;
+    font-size: 13px;
+  }
+  .dark body {
+    @apply bg-navy-950 text-navy-100;
+  }
+}
+
+@layer components {
+  /* ── Cards ─────────────────────────────── */
+  .card {
+    @apply bg-ms-surface border border-ms-border rounded-fluent shadow-fluent;
+  }
+  .dark .card {
+    @apply bg-navy-800 border-navy-700 shadow-dark-sm;
+  }
+
+  /* ── Buttons ────────────────────────────── */
+  .btn-primary {
+    @apply bg-ms-blue text-white px-4 py-1.5 rounded-fluent text-xs
+           font-semibold hover:bg-ms-bluedark transition-colors
+           duration-150 cursor-pointer border border-transparent;
+  }
+  .btn-ghost {
+    @apply border border-ms-border text-ms-neutral bg-ms-surface
+           px-4 py-1.5 rounded-fluent text-xs font-semibold
+           hover:bg-ms-gray transition-colors duration-150 cursor-pointer;
+  }
+  .dark .btn-ghost {
+    @apply border-navy-600 text-navy-300 bg-navy-800 hover:bg-navy-700;
+  }
+
+  /* ── Input ──────────────────────────────── */
+  .inp {
+    @apply border border-ms-border bg-ms-surface text-ms-dark
+           rounded-fluent px-3 py-1.5 text-xs outline-none
+           transition-all duration-150
+           placeholder:text-ms-neutral/50
+           focus:border-ms-blue focus:ring-2 focus:ring-ms-blue/20;
+  }
+  .dark .inp {
+    @apply border-navy-600 bg-navy-800 text-navy-100
+           placeholder:text-navy-400/50
+           focus:border-accent;
+  }
+
+  /* ── Risk badges ────────────────────────── */
+  .badge-high {
+    @apply bg-red-50 text-risk-high border border-red-200
+           px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide;
+  }
+  .badge-medium {
+    @apply bg-amber-50 text-risk-medium border border-amber-200
+           px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide;
+  }
+  .badge-low {
+    @apply bg-green-50 text-risk-low border border-green-200
+           px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide;
+  }
+  .dark .badge-high   { @apply bg-red-950/40   border-red-800; }
+  .dark .badge-medium { @apply bg-amber-950/40 border-amber-800; }
+  .dark .badge-low    { @apply bg-green-950/40 border-green-800; }
+
+  /* ── Table ──────────────────────────────── */
+  .tbl th {
+    @apply px-4 py-2.5 text-left text-[10px] font-semibold
+           text-ms-neutral uppercase tracking-wider
+           bg-ms-gray border-b border-ms-border whitespace-nowrap;
+  }
+  .dark .tbl th {
+    @apply text-navy-400 bg-navy-900 border-navy-700;
+  }
+  .tbl td {
+    @apply px-4 py-2.5 text-xs text-ms-dark
+           border-b border-ms-border/60 whitespace-nowrap;
+  }
+  .dark .tbl td {
+    @apply text-navy-200 border-navy-700/60;
+  }
+  .tbl tbody tr { @apply hover:bg-ms-gray/60 transition-colors duration-100; }
+  .dark .tbl tbody tr { @apply hover:bg-navy-700/40; }
+  .tbl tbody tr:last-child td { @apply border-b-0; }
+
+  /* ── Sidebar ────────────────────────────── */
+  .sidebar-base {
+    @apply bg-ms-surface border-r border-ms-border;
+  }
+  .dark .sidebar-base {
+    @apply bg-navy-900 border-navy-700;
+  }
+  .nav-item {
+    @apply relative w-full flex items-center gap-2.5 px-5 py-2
+           text-left text-[12px] transition-all duration-100
+           text-ms-neutral hover:bg-ms-gray hover:text-ms-dark;
+  }
+  .dark .nav-item {
+    @apply text-navy-400 hover:bg-navy-800 hover:text-navy-200;
+  }
+  .nav-item.active {
+    @apply text-ms-blue font-semibold bg-blue-50/70;
+  }
+  .dark .nav-item.active {
+    @apply text-blue-400 bg-blue-950/40;
+  }
+}
