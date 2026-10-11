@@ -1,25 +1,48 @@
-const BASE = import.meta.env.VITE_API_URL as string;
+// Sanitize API URL: strip trailing slash and default to empty string (same-origin) if unset
+const RAW_BASE = (import.meta.env.VITE_API_URL as string | undefined) ?? "";
+const BASE = RAW_BASE.trim().replace(/\/+$/, "");
+
+const REQUEST_TIMEOUT_MS = 15000;
 
 async function get<T>(path: string): Promise<T> {
-  const res = await fetch(`${BASE}${path}`, {
-    headers: {
-      "Content-Type": "application/json",
-    },
-  });
-  if (!res.ok) {
-    const text = await res.text().catch(() => "");
-    console.error(`[ChurnIQ] ❌ ${res.status} ${path}`, text.slice(0, 200));
-    throw new Error(`API ${res.status}: ${path}`);
+  const url = `${BASE}${path}`;
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+
+  try {
+    const res = await fetch(url, {
+      signal: controller.signal,
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (!res.ok) {
+      const text = await res.text().catch(() => "");
+      console.error(`[ChurnIQ] ❌ ${res.status} ${path}`, text.slice(0, 100));
+      throw new Error(`API ${res.status}: ${path}`);
+    }
+    return await res.json();
+  } catch (err: unknown) {
+    if (err instanceof DOMException && err.name === "AbortError") {
+      throw new Error(`Request timed out after ${REQUEST_TIMEOUT_MS}ms: ${path}`);
+    }
+    throw err;
+  } finally {
+    clearTimeout(timer);
   }
-  return res.json();
 }
 
 export async function healthCheck(): Promise<boolean> {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 5000);
   try {
-    const res = await fetch(`${BASE}/api/health`);
+    const res = await fetch(`${BASE}/api/health`, { signal: controller.signal });
     return res.ok;
   } catch {
     return false;
+  } finally {
+    clearTimeout(timer);
   }
 }
 
@@ -58,12 +81,17 @@ export interface SegmentsData {
 export const api = {
   summary:      () => get<Summary>("/api/summary"),
   customers:    (risk = "all", q = "") =>
-    get<Customer[]>(`/api/customers?risk=${risk}&q=${encodeURIComponent(q)}&limit=100`),
-  customer:     (id: string) => get<CustomerDetail>(`/api/customers/${id}`),
-  score:        (p: Record<string, number>) =>
-    get<ScoreResult>(`/api/score?${new URLSearchParams(
-      Object.entries(p).map(([k, v]) => [k, String(v)])
-    )}`),
+    get<Customer[]>(`/api/customers?risk=${encodeURIComponent(risk)}&q=${encodeURIComponent(q)}&limit=100`),
+  customer:     (id: string) => get<CustomerDetail>(`/api/customers/${encodeURIComponent(id)}`),
+  score:        (p: Record<string, number>) => {
+    const params = new URLSearchParams();
+    for (const [k, v] of Object.entries(p)) {
+      if (typeof v === "number" && !Number.isNaN(v)) {
+        params.append(encodeURIComponent(k), String(v));
+      }
+    }
+    return get<ScoreResult>(`/api/score?${params.toString()}`);
+  },
   shap:         () => get<ShapItem[]>("/api/shap"),
   metrics:      () => get<MetricsData>("/api/metrics"),
   distribution: () => get<DistItem[]>("/api/distribution"),
